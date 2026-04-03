@@ -16,6 +16,8 @@ def parse_args():
 
   parser.add_argument('--exp_name', type=str, default=date_str)
 
+  parser.add_argument('--query', type=str, required=True)
+
   return parser.parse_args()
   
 def setup_logger(log_dir, exp_name):
