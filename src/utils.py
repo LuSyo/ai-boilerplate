@@ -60,4 +60,6 @@ class Config:
    RESULTS_DIR = './results'
    EVAL_DIR = './data/eval'
 
+   MLFLOW_TRACKING_URI = "http://localhost:5000"
+
    SEED = 4

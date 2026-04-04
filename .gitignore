@@ -10,6 +10,10 @@ results/
 # logs
 logs/
 
+# mlflow DB and artefact
+mlflow.*
+mlartifacts/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
