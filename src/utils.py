@@ -10,13 +10,15 @@ import sys
 def parse_args():
   date_str = datetime.datetime.now().strftime('%Y-%m-%d')
 
-  parser = argparse.ArgumentParser(description="CEVAE-HE Training and Testing Pipeline")
+  parser = argparse.ArgumentParser(description="ANONYNIMSATION PIPELINE")
 
   parser.add_argument('--seed', type=int, default=Config.SEED)
 
   parser.add_argument('--exp_name', type=str, default=date_str)
 
-  parser.add_argument('--query', type=str, required=True)
+  parser.add_argument('--query', type=str, default=None)
+  parser.add_argument('--eval_dataset', type=str, default=None)
+
 
   return parser.parse_args()
   
