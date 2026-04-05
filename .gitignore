@@ -13,6 +13,7 @@ logs/
 # mlflow DB and artefact
 mlflow.*
 mlartifacts/
+mlruns/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

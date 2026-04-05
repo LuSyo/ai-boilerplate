@@ -17,7 +17,7 @@ def parse_args():
   parser.add_argument('--exp_name', type=str, default=date_str)
   parser.add_argument('--run_name', type=str, default=date_str)
 
-  parser.add_argument('--query', type=str, required=True)
+  parser.add_argument('--email', type=str)
 
   return parser.parse_args()
   
@@ -57,10 +57,12 @@ def set_global_seeds(seed):
 class Config:
    DATA_DIR = './data'
    SOURCES_DIR = './data/sources'
+   INCOMING_DIR = './data/incoming'
    LOG_DIR = './logs'
    RESULTS_DIR = './results'
    EVAL_DIR = './data/eval'
 
-   MLFLOW_TRACKING_URI = "http://localhost:5000"
+   MLFLOW_TRACKING_URI = "sqlite:///mlflow.db"
+   # mlflow ui --backend-store-uri sqlite:///mlflow.db to see results
 
    SEED = 4
