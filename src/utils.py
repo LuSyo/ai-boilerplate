@@ -10,7 +10,7 @@ import sys
 def parse_args():
   date_str = datetime.datetime.now().strftime('%Y-%m-%d')
 
-  parser = argparse.ArgumentParser(description="CEVAE-HE Training and Testing Pipeline")
+  parser = argparse.ArgumentParser(description="Email Triage Pipeline")
 
   parser.add_argument('--seed', type=int, default=Config.SEED)
 

@@ -23,4 +23,20 @@ Triage workflow:
   - Retrieve sources most relevant to the query
   - Formulate a response answerign the query and addressing the user email
 
+# Runs
 
+## Run 1
+
+From manual look at drafted responses:
+- LLM lies about having taken some remedial actions
+- LLM provides invented information
+
+
+=> Next steps:
+- RAG with policy docs: DONE
+- query and retriever nodes
+
+
+# Later 
+- implement node to review responses
+- node to 

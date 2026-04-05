@@ -48,35 +48,34 @@ def main():
       with open(file_path, "r") as f:
         email_content = f.read()
 
-      with mlflow.start_run(run_name=filename, nested=True):
-       
-        initial_state = GraphState(
-          raw_message=email_content,
-          seed=args.seed
-        )
+      initial_state = GraphState(
+        raw_message=email_content,
+        seed=args.seed
+      )
 
-        logger.info(f"EMAIL: {email_content[:30]}")
+      logger.info(f"EMAIL: {email_content[:30]}")
 
-        final_state = app.invoke(initial_state, config=config) 
-        draft_response = final_state["draft"]
+      final_state = app.invoke(initial_state, config=config) 
+      draft_response = final_state["draft"]
 
-        results.append({
-          "filename": filename,
-          "category_pred": final_state["category"]
-        })
+      results.append({
+        "filename": filename,
+        "category_pred": final_state["category"]
+      })
 
+      if draft_response:
         file_path = os.path.join(drafts_dir, f"{args.run_name}_{filename}_response.txt")
         with open(file_path, "w") as f:
           f.write(draft_response)
 
-        mlflow.log_artifact(file_path, f"{args.run_name}_{filename}_response.txt")
+      mlflow.log_artifact(file_path, f"{args.run_name}_{filename}_response.txt")
 
     eval_gt_path = os.path.join(Config.EVAL_DIR, "email_eval_gt.json")
     metrics = eval_metrics(results, eval_gt_path)
     mlflow.log_metrics(metrics)
 
     with open(f"{result_dir}/metrics.json", "w") as f:
-      f.write(metrics)
+      json.dump(metrics, f)
 
 
 def eval_metrics(results, gt_path):
