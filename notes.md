@@ -25,7 +25,7 @@ Triage workflow:
 
 # Runs
 
-## Run 1
+## Run 1: 0_all_emails
 
 From manual look at drafted responses:
 - LLM lies about having taken some remedial actions
@@ -34,9 +34,15 @@ From manual look at drafted responses:
 
 => Next steps:
 - RAG with policy docs: DONE
-- query and retriever nodes
+- retriever node: retrieve the documents most relevatn to answer the email
 
+## Run 2: 1_all_emails
+Low recall on actual queries
+Low precision on urgent emails
+
+=> Need a confusion matrix
 
 # Later 
+- query extractor
 - implement node to review responses
 - node to 

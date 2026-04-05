@@ -12,7 +12,7 @@ mlflow.langchain.autolog(
 )
 
 from langchain_core.messages import HumanMessage
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from workflow.graph import build_graph
 from workflow.schema import GraphState
 
@@ -22,9 +22,9 @@ def main():
   set_global_seeds(args.seed)
   logger = setup_logger(Config.LOG_DIR, args.exp_name)
 
-  result_dir = os.path.join(Config.RESULTS_DIR, args.exp_name)
+  result_dir = os.path.join(Config.RESULTS_DIR, args.exp_name, args.run_name)
   os.makedirs(result_dir, exist_ok=True)
-  drafts_dir = os.path.join(Config.DATA_DIR, "drafts", args.exp_name)
+  drafts_dir = os.path.join(Config.DATA_DIR, "drafts", args.exp_name, args.run_name)
   os.makedirs(drafts_dir, exist_ok=True)
 
   incoming_dir = os.path.join(Config.DATA_DIR, "incoming")
@@ -36,7 +36,11 @@ def main():
 
   triage_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.0)
   response_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
-  config = {"metadata": {"triage_llm": triage_llm, "response_llm": response_llm}}
+  embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+
+  config = {"metadata": {"triage_llm": triage_llm, 
+                         "embeddings": embeddings, 
+                         "response_llm": response_llm}}
 
   with mlflow.start_run(run_name=args.run_name) as run:
     mlflow.log_params(vars(args))

@@ -3,6 +3,11 @@ from typing import List, Annotated
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
+class TriageOutput(BaseModel):
+  category: str = Field(description="One of: 'query', 'urgent', 'spam', 'unknown'") 
+  reasoning: str = Field(description="Brief explanation for the classification")
+  is_sensitive: bool = Field(description="True if the email contains threats, crisis, or high-risk content")
+
 class GraphState(BaseModel):
   seed: int = Field(default = 4)
   category: str = Field(default="") # query, spam, urgent, unknown
