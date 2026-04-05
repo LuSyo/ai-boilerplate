@@ -3,6 +3,8 @@ import os
 import json
 import mlflow
 import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
 from utils import parse_args, set_global_seeds, setup_logger, Config
 
 mlflow.set_tracking_uri(Config.MLFLOW_TRACKING_URI)
@@ -11,12 +13,12 @@ mlflow.langchain.autolog(
   run_tracer_inline=True
 )
 
-from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from workflow.graph import build_graph
 from workflow.schema import GraphState
 
 def main():
+  # ---- Experiment setup
   load_dotenv()
   args = parse_args()
   set_global_seeds(args.seed)
@@ -34,6 +36,7 @@ def main():
 
   app = build_graph()
 
+  # Set up the RunnableConfig
   triage_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.0)
   response_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
   embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
@@ -41,13 +44,15 @@ def main():
   config = {"metadata": {"triage_llm": triage_llm, 
                          "embeddings": embeddings, 
                          "response_llm": response_llm}}
-
+  
+  # ---- Start the run
   with mlflow.start_run(run_name=args.run_name) as run:
     mlflow.log_params(vars(args))
 
     results =[]
-    for filename in incoming_files:
 
+    # Process one email at a time
+    for filename in incoming_files:
       file_path = os.path.join(incoming_dir, filename)
       with open(file_path, "r") as f:
         email_content = f.read()
@@ -59,14 +64,17 @@ def main():
 
       logger.info(f"EMAIL: {email_content[:30]}")
 
+      # Run the workflow
       final_state = app.invoke(initial_state, config=config) 
       draft_response = final_state["draft"]
 
+      # Log the results
       results.append({
         "filename": filename,
         "category_pred": final_state["category"]
       })
 
+      # Save the draft response
       if draft_response:
         file_path = os.path.join(drafts_dir, f"{args.run_name}_{filename}_response.txt")
         with open(file_path, "w") as f:
@@ -74,63 +82,46 @@ def main():
 
       mlflow.log_artifact(file_path, f"{args.run_name}_{filename}_response.txt")
 
+    #---- Performance metrics
     eval_gt_path = os.path.join(Config.EVAL_DIR, "email_eval_gt.json")
-    metrics = eval_metrics(results, eval_gt_path)
+    with open(eval_gt_path, "r") as f:
+      ground_truth = json.load(f)
+
+    y_true = [ground_truth[r["filename"]] for r in results]
+    y_pred = [r["category_pred"] for r in results]
+    labels = ["query", "urgent", "spam", "unknown"]
+
+    metrics, confusion_matrix_fig, class_report = eval_metrics(y_true, y_pred, labels)
     mlflow.log_metrics(metrics)
+    mlflow.log_figure(confusion_matrix_fig, "confusion_matrix.png")
 
     with open(f"{result_dir}/metrics.json", "w") as f:
       json.dump(metrics, f)
+    with open(f"{result_dir}/class_report.json", "w") as f:
+      json.dump(class_report, f)
+
+    confusion_matrix_fig.savefig(f"{result_dir}/confusion_matrix.png")
 
 
-def eval_metrics(results, gt_path):
-  with open(gt_path, "r") as f:
-    ground_truth = json.load(f)
 
-  # with regards to "query" class
-  fn_q, fp_q, tn_q, tp_q = [0]*4
-  # with regards to "urgent" class
-  fn_u, fp_u, tn_u, tp_u = [0]*4
-
-  correct = 0
-
-  for r in results:
-    filename = r["filename"] 
-    prediction = r["category_pred"]
-    if prediction == ground_truth[filename]:
-      correct += 1
-
-    if ground_truth[filename] == "query":
-      if prediction  == "query":
-        tp_q += 1
-      else:
-        fn_q +=1
-    else:
-      if prediction == "query":
-        fp_q += 1
-      else:
-        tn_q +=1
-
-    if ground_truth[filename] == "urgent":
-      if prediction == "urgent":
-        tp_u += 1
-      else:
-        fn_u +=1
-    else:
-      if prediction == "urgent":
-        fp_u += 1
-      else:
-        tn_u +=1
+def eval_metrics(y_true, y_pred, labels):
+  # Classification report
+  report = classification_report(y_true, y_pred, labels=labels, output_dict=True, zero_division=np.nan)
+  print("Classification Report:")
+  print(report)
   
-  precision_query = tp_q / (tp_q + fp_q) if tp_q + fp_q > 0 else np.nan
-  recall_query = tp_q / (tp_q + fn_q)
-  precision_urgent = tp_u / (tp_u + fp_u) if tp_u + fp_u > 0 else np.nan
-  recall_urgent = tp_u / (tp_u + fn_u)
-
-  accuracy = correct / len(results)
-
-  return {
-    "accuracy": accuracy, "precision_query": precision_query, "recall_query": recall_query, "precision_urgent": precision_urgent, "recall_urgent": recall_urgent}
-
+  # Generate Confusion Matrix
+  cm = confusion_matrix(y_true, y_pred, labels=labels)
+  fig, ax = plt.subplots(figsize=(8, 6))
+  disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+  disp.plot(cmap=plt.cm.Blues, ax=ax)
+  ax.set_title("Email Triage Confusion Matrix")
+  
+  # Calculate accuracy
+  correct = sum(1 for t, p in zip(y_true, y_pred) if t == p)
+  accuracy = correct / len(y_true) if y_true else 0
+  
+  return {"accuracy": accuracy}, fig, report
 
 if __name__ == "__main__":
   main()

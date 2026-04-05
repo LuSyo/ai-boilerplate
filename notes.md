@@ -40,7 +40,13 @@ From manual look at drafted responses:
 Low recall on actual queries
 Low precision on urgent emails
 
-=> Need a confusion matrix
+=> Need a confusion matrix: DONE
+3 "query" misclassified as "urgent", hence the above
+All spam correctly caught, and nothing thrown to span inadvertently
+
+issues:
+- emails promise some actions => either not mention actions or create an action item for relevant team
+
 
 # Later 
 - query extractor
