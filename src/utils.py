@@ -15,6 +15,7 @@ def parse_args():
   parser.add_argument('--seed', type=int, default=Config.SEED)
 
   parser.add_argument('--exp_name', type=str, default=date_str)
+  parser.add_argument('--run_name', type=str, default=date_str)
 
   parser.add_argument('--query', type=str, required=True)
 
