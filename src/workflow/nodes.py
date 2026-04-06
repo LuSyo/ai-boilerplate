@@ -1,18 +1,17 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_openai import ChatOpenAI
+from langchain_core.runnables import RunnableConfig
 from pydantic import BaseModel, Field
 from workflow.schema import GraphState
 
-def generate(state: GraphState):
+def generate(state: GraphState, config: RunnableConfig):
   """
     Generate answer to a query based on context
   """
 
   print("--- Generate response ---")
 
-  # Setup llm
-  llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, seed=state.seed)
+  llm = config["metadata"]["generate_llm"]
 
   template = """
     Answer the query 

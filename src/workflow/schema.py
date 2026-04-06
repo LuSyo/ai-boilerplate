@@ -9,4 +9,4 @@ class GraphState(BaseModel):
   context: List[str] = Field(default_factory=list)
 
   def __repr__(self):
-        return f"GraphState(messages_count={len(self.messages)})"
+    return f"GraphState(messages_count={len(self.messages)})"

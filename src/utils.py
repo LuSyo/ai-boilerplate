@@ -61,6 +61,7 @@ class Config:
    RESULTS_DIR = './results'
    EVAL_DIR = './data/eval'
 
-   MLFLOW_TRACKING_URI = "http://localhost:5000"
+   MLFLOW_TRACKING_URI = "sqlite:///mlflow.db"
+   # mlflow ui --backend-store-uri sqlite:///mlflow.db to see results
 
    SEED = 4
