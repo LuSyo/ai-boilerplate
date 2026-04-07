@@ -17,7 +17,6 @@ def parse_args():
   parser.add_argument('--exp_name', type=str, default=date_str)
   parser.add_argument('--run_name', type=str, default=date_str)
 
-  parser.add_argument('--query', type=str, required=True)
 
   return parser.parse_args()
   
@@ -55,11 +54,11 @@ def set_global_seeds(seed):
   # torch.cuda.manual_seed_all(seed)
 
 class Config:
-   DATA_DIR = './data'
+   DATA_DIR = './data/readmissions'
    SOURCES_DIR = './data/sources'
-   LOG_DIR = './logs'
-   RESULTS_DIR = './results'
-   EVAL_DIR = './data/eval'
+   LOG_DIR = './logs/readmissions'
+   RESULTS_DIR = './results/readmissions'
+   EVAL_DIR = './data/readmissions/eval'
 
    MLFLOW_TRACKING_URI = "sqlite:///mlflow.db"
    # mlflow ui --backend-store-uri sqlite:///mlflow.db to see results
